@@ -10,6 +10,23 @@ class SearchTimeout(Exception):
     pass
 
 
+def terminal_test(game):
+    """
+    Parameters
+    ----------
+    game : `isolation.Board`
+        An instance of `isolation.Board` encoding the current state of the
+        game (e.g., player locations and blocked cells).
+    Returns
+    -------
+    boolean
+        Whether or not there are moves left for the current player. If a
+        player does not have a move left, game is over, other player wins.
+    """
+    # check if there are moves left
+    return not bool(game.get_legal_moves())
+
+
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
@@ -258,14 +275,6 @@ class MinimaxPlayer(IsolationPlayer):
         return v
 
 
-    def terminal_test(game):
-
-        return not bool(game.get_legal_moves())
-
-
-
-
-
 class AlphaBetaPlayer(IsolationPlayer):
     """Game-playing agent that chooses a move using iterative deepening minimax
     search with alpha-beta pruning. You must finish and test this player to
@@ -355,5 +364,10 @@ class AlphaBetaPlayer(IsolationPlayer):
         if self.time_left() < self.TIMER_THRESHOLD:
             raise SearchTimeout()
 
-        # TODO: finish this function!
-        raise NotImplementedError
+        best_score = float('-inf')
+
+        # no legal moves left
+        if not game.get_legal_moves():
+            return (-1, -1)
+        # best move default (first legal move)
+        best_move = game.get_legal_moves()[0]
