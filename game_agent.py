@@ -27,6 +27,15 @@ def terminal_test(game):
     return not bool(game.get_legal_moves())
 
 
+def timeout_check():
+    """
+    Checks to see if the TIMER_THRESHOLD has been reached.
+    """
+    # timeout check
+    if self.time_left() < self.TIMER_THRESHOLD:
+        raise SearchTimeout()
+
+
 def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
@@ -226,17 +235,17 @@ class MinimaxPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
+        timeout_check()
 
         best_score = float('-inf')
 
         # no legal moves left
         if not game.get_legal_moves():
             return (-1, -1)
-        # best move default (first legal move)
+        # best move default (first available legal move)
         best_move = game.get_legal_moves()[0]
 
+        # all possible actions contrained by depth
         for move in game.get_legal_moves():
             v = min_value(game.forecast_move(move), depth - 1)
             if v > best_score:
@@ -246,32 +255,32 @@ class MinimaxPlayer(IsolationPlayer):
         return best_move
 
 
+    def max_value(game, depth):
+
+        timeout_check()
+
+        # recursive calls decrement depth until it reaches 0 or terminal_test
+        if depth <= 0 or terminal_test(game):
+            return self.score(game, self)
+
+        v = float('-inf')
+
+        for move in game.get_legal_moves():
+            v = max(v, min_value(game.forecast_move(move), depth - 1))
+        return v
+
+
     def min_value(game, depth):
 
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
+        timeout_check()
 
-        # recursive calls decrement depth until it reaches 0
-        if depth <= 0 not game.get_legal_moves():
+        # recursive calls decrement depth until it reaches 0 or terminal_test
+        if depth <= 0 or terminal_test(game):
             return self.score(game, self)
 
         v = float('inf')
         for move in game.get_legal_moves():
             v = min(v, max_value(game.forecast_move(move), depth - 1))
-        return v
-
-    def max_value(game, depth):
-
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
-
-        # recursive calls decrement depth until it reaches 0
-        if depth <= 0 not game.get_legal_moves():
-            return self.score(game, self)
-
-        v = float('-inf')
-        for move in game.get_legal_moves():
-            v = max(v, min_value(game.forecast_move(move), depth - 1))
         return v
 
 
@@ -361,8 +370,7 @@ class AlphaBetaPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
+        timeout_check()
 
         best_score = float('-inf')
 
@@ -371,3 +379,23 @@ class AlphaBetaPlayer(IsolationPlayer):
             return (-1, -1)
         # best move default (first legal move)
         best_move = game.get_legal_moves()[0]
+
+        for move in game.get_legal_moves():
+            value = max_value(game.forecast_move(move), alpha, beta, depth - 1)
+            if value > best_score:
+                best_score = value
+                best_move = move
+
+        return best_move
+
+
+    def max_value(game, alpha, beta, depth):
+
+        timeout_check()
+
+
+
+
+    def min_value(game, alpha, beta, depth):
+
+        timeout_check()
