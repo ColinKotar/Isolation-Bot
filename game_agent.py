@@ -246,11 +246,11 @@ class MinimaxPlayer(IsolationPlayer):
         best_move = game.get_legal_moves()[0]
 
         # all possible actions contrained by depth
-        for move in game.get_legal_moves():
-            v = min_value(game.forecast_move(move), depth - 1)
+        for m in game.get_legal_moves():
+            v = min_value(game.forecast_move(m), depth - 1)
             if v > best_score:
                 best_score = v
-                best_move = move
+                best_move = m
 
         return best_move
 
@@ -265,8 +265,9 @@ class MinimaxPlayer(IsolationPlayer):
 
         v = float('-inf')
 
-        for move in game.get_legal_moves():
-            v = max(v, min_value(game.forecast_move(move), depth - 1))
+        # max in node, update depth
+        for m in game.get_legal_moves():
+            v = max(v, min_value(game.forecast_move(m), depth - 1))
         return v
 
 
@@ -279,8 +280,10 @@ class MinimaxPlayer(IsolationPlayer):
             return self.score(game, self)
 
         v = float('inf')
-        for move in game.get_legal_moves():
-            v = min(v, max_value(game.forecast_move(move), depth - 1))
+
+        # min in node, update depth
+        for m in game.get_legal_moves():
+            v = min(v, max_value(game.forecast_move(m), depth - 1))
         return v
 
 
@@ -380,11 +383,11 @@ class AlphaBetaPlayer(IsolationPlayer):
         # best move default (first legal move)
         best_move = game.get_legal_moves()[0]
 
-        for move in game.get_legal_moves():
-            value = max_value(game.forecast_move(move), alpha, beta, depth - 1)
-            if value > best_score:
-                best_score = value
-                best_move = move
+        for m in game.get_legal_moves():
+            v = max_value(game.forecast_move(m), alpha, beta, depth - 1)
+            if v > best_score:
+                best_score = v
+                best_move = m
 
         return best_move
 
@@ -393,9 +396,33 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         timeout_check()
 
+        # recursive calls decrement depth until it reaches 0 or terminal_test
+        if depth <= 0 or terminal_test(game):
+            return self.score(game, self)
 
+        v = float('-inf')
+
+        for m in game.get_legal_moves(game):
+            v = max(v, min_value(game.forecast_move(m), alpha, beta, depth - 1))
+            if v >= beta:
+                return v
+            alpha = max(alpha, v)
+        return v
 
 
     def min_value(game, alpha, beta, depth):
 
         timeout_check()
+
+        # recursive calls decrement depth until it reaches 0 or terminal_test
+        if depth <= 0 or terminal_test(game):
+            return self.score(game, self)
+
+        v = float('inf')
+
+        for m in game.get_legal_moves(game):
+            v = min(v, max_value(game.forecast_move(m), alpha, beta, depth - 1))
+            if v <= alpha:
+                return v
+            b = min(beta, v)
+        return v
