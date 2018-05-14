@@ -40,10 +40,10 @@ def custom_score(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
 
-    This should be the best heuristic function for your project submission.
-
-    Note: this function should be called from within a Player instance as
-    `self.score()` -- you should not need to call this function directly.
+    This is a weighted heuristic which does not give a high score early on
+    in the game, however, as the game goes on, decreasing the opp_moves
+    becomes more valuable. The reason for this is that the board early on is
+    very symmetrical so each different move does not matter as much.
 
     Parameters
     ----------
@@ -60,16 +60,33 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    # moves left for each player & total
+    my_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    total = my_moves + opp_moves
+
+    # appreciating weight
+    weight = 1/total
+
+    # become more aggressive as the game goes on
+    score = float(my_moves - (weight*opp_moves))
+
+    return score
 
 
 def custom_score_2(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
 
-    Note: this function should be called from within a Player instance as
-    `self.score()` -- you should not need to call this function directly.
+    This is a another weighted heuristic where we have a fixed weight
+    throughout the game. This places importance on decreasing the enemies
+    total legal moves.
 
     Parameters
     ----------
@@ -86,16 +103,27 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    # moves left for each player
+    my_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+
+    # consistently decrease opponents moves
+    score = float(own_moves - (1.25*opp_moves))
+
+    return score
 
 
 def custom_score_3(game, player):
     """Calculate the heuristic value of a game state from the point of view
     of the given player.
 
-    Note: this function should be called from within a Player instance as
-    `self.score()` -- you should not need to call this function directly.
+    This is an experimental heuristic.
 
     Parameters
     ----------
@@ -112,8 +140,21 @@ def custom_score_3(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    # TODO: finish this function!
-    raise NotImplementedError
+    if game.is_loser(player):
+        return float("-inf")
+
+    if game.is_winner(player):
+        return float("inf")
+
+    # moves left for each player & total
+    my_moves = len(game.get_legal_moves(player))
+    opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    total = my_moves + opp_moves
+
+    # experimental heuristic
+    score = float(my_moves/total)
+
+    return score
 
 
 class IsolationPlayer:
@@ -191,7 +232,7 @@ class MinimaxPlayer(IsolationPlayer):
             return self.minimax(game, self.search_depth)
 
         except SearchTimeout:
-            pass  # Handle any actions required after timeout as needed
+            print("Search has timedout, returning best move: " + str(best_move))
 
         # Return the best move from the last completed search iteration
         return best_move
@@ -335,7 +376,7 @@ class AlphaBetaPlayer(IsolationPlayer):
             return self.alphabeta(game, alpha, beta, self.search_depth)
 
         except SearchTimeout:
-            pass  # Handle any actions required after timeout as needed
+            print("Search has timedout, returning best move: " + str(best_move))
 
         # Return the best move from the last completed search iteration
         return best_move
@@ -419,6 +460,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         # max in node, update depth/alpha
         for m in game.get_legal_moves(game):
             v = max(v, min_value(game.forecast_move(m), alpha, beta, depth - 1))
+            # check upper bound
             if v >= beta:
                 return v
             alpha = max(alpha, v)
@@ -438,6 +480,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         # min in node, update depth/beta
         for m in game.get_legal_moves(game):
             v = min(v, max_value(game.forecast_move(m), alpha, beta, depth - 1))
+            # check lower bound
             if v <= alpha:
                 return v
             b = min(beta, v)
