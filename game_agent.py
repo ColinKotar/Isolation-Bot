@@ -36,11 +36,20 @@ def timeout_check(self):
         raise SearchTimeout()
 
 
-def custom_score(game, player):
-    """Calculate the heuristic value of a game state from the point of view
-    of the given player.
+def check_winner(game, player):
+    """
+    Checks to see if there is a winner and a loser
+    """
+    if game.is_loser(player):
+        return float("-inf")
 
-    This is a weighted heuristic which does not give a high score early on
+    if game.is_winner(player):
+        return float("inf")
+
+
+def custom_score(game, player):
+    """
+    A weighted heuristic which does not give a high score early on
     in the game, however, as the game goes on, decreasing the opp_moves
     becomes more valuable. The reason for this is that the board early on is
     very symmetrical so each different move does not matter as much.
@@ -60,16 +69,16 @@ def custom_score(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    if game.is_loser(player):
-        return float("-inf")
-
-    if game.is_winner(player):
-        return float("inf")
+    check_winner(game, player)
 
     # moves left for each player & total
     my_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
     total = my_moves + opp_moves
+
+    # to insure no division by 0
+    if total == 0:
+        total += 1
 
     # appreciating weight
     weight = 1/total
@@ -81,12 +90,9 @@ def custom_score(game, player):
 
 
 def custom_score_2(game, player):
-    """Calculate the heuristic value of a game state from the point of view
-    of the given player.
-
-    This is a another weighted heuristic where we have a fixed weight
-    throughout the game. This places importance on decreasing the enemies
-    total legal moves.
+    """
+    Another weighted heuristic where we have a fixed weight throughout the
+    game. This places importance on decreasing the enemies total legal moves.
 
     Parameters
     ----------
@@ -103,27 +109,39 @@ def custom_score_2(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    if game.is_loser(player):
-        return float("-inf")
+    # if game.is_loser(player):
+    #     return float("-inf")
+    #
+    # if game.is_winner(player):
+    #     return float("inf")
+    #
+    # # moves left for each player
+    # my_moves = len(game.get_legal_moves(player))
+    # opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    #
+    # # consistently decrease opponents moves
+    # score = float(my_moves - (1.25 * opp_moves))
+    #
+    # return score
+    # ratio of player's moves to opponent's moves
 
-    if game.is_winner(player):
-        return float("inf")
+    check_winner(game, player)
 
-    # moves left for each player
+    # moves left for each player & total
     my_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
+    total_moves = my_moves + opp_moves
+    moves_diff = my_moves - opp_moves
 
-    # consistently decrease opponents moves
-    score = float(my_moves - (1.25 * opp_moves))
+
+    score = 0
 
     return score
 
 
 def custom_score_3(game, player):
-    """Calculate the heuristic value of a game state from the point of view
-    of the given player.
-
-    This is an experimental heuristic.
+    """
+    Experimental heuristic.
 
     Parameters
     ----------
@@ -140,16 +158,15 @@ def custom_score_3(game, player):
     float
         The heuristic value of the current game state to the specified player.
     """
-    if game.is_loser(player):
-        return float("-inf")
-
-    if game.is_winner(player):
-        return float("inf")
+    check_winner(game, player)
 
     # moves left for each player & total
     my_moves = len(game.get_legal_moves(player))
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
     total = my_moves + opp_moves
+
+    if total == 0:
+        total += 1
 
     # experimental heuristic
     score = float(my_moves/total)
@@ -179,7 +196,7 @@ class IsolationPlayer:
         positive value large enough to allow the function to return before the
         timer expires.
     """
-    def __init__(self, search_depth=3, score_fn=custom_score, timeout=10.):
+    def __init__(self, search_depth=2, score_fn=custom_score, timeout=10.):
         self.search_depth = search_depth
         self.score = score_fn
         self.time_left = None
@@ -269,9 +286,7 @@ class MinimaxPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        # timeout check
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
+        timeout_check(self)
 
         best_score = float('-inf')
 
@@ -293,9 +308,7 @@ class MinimaxPlayer(IsolationPlayer):
 
 def max_value(self, game, depth):
 
-    # timeout check
-    if self.time_left() < self.TIMER_THRESHOLD:
-        raise SearchTimeout()
+    timeout_check(self)
 
     # recursive calls decrement depth until it reaches 0 or terminal_test
     if depth <= 0 or terminal_test(game):
@@ -311,9 +324,7 @@ def max_value(self, game, depth):
 
 def min_value(self, game, depth):
 
-    # timeout check
-    if self.time_left() < self.TIMER_THRESHOLD:
-        raise SearchTimeout()
+    timeout_check(self)
 
     # recursive calls decrement depth until it reaches 0 or terminal_test
     if depth <= 0 or terminal_test(game):
@@ -420,9 +431,7 @@ class AlphaBetaPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        # timeout check
-        if self.time_left() < self.TIMER_THRESHOLD:
-            raise SearchTimeout()
+        timeout_check(self)
 
         best_score = float('-inf')
 
@@ -444,9 +453,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 
 def max_value_ab(self, game, alpha, beta, depth):
 
-    # timeout check
-    if self.time_left() < self.TIMER_THRESHOLD:
-        raise SearchTimeout()
+    timeout_check(self)
 
     # recursive calls decrement depth until it reaches 0 or terminal_test
     if depth <= 0 or terminal_test(game):
@@ -466,9 +473,7 @@ def max_value_ab(self, game, alpha, beta, depth):
 
 def min_value_ab(self, game, alpha, beta, depth):
 
-    # timeout check
-    if self.time_left() < self.TIMER_THRESHOLD:
-        raise SearchTimeout()
+    timeout_check(self)
 
     # recursive calls decrement depth until it reaches 0 or terminal_test
     if depth <= 0 or terminal_test(game):
