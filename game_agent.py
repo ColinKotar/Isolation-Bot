@@ -27,7 +27,7 @@ def terminal_test(game):
     return not bool(game.get_legal_moves())
 
 
-def timeout_check():
+def timeout_check(self):
     """
     Checks to see if the TIMER_THRESHOLD has been reached.
     """
@@ -75,7 +75,7 @@ def custom_score(game, player):
     weight = 1/total
 
     # become more aggressive as the game goes on
-    score = float(my_moves - (weight*opp_moves))
+    score = float(my_moves - (weight * opp_moves))
 
     return score
 
@@ -114,7 +114,7 @@ def custom_score_2(game, player):
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
 
     # consistently decrease opponents moves
-    score = float(own_moves - (1.25*opp_moves))
+    score = float(my_moves - (1.25 * opp_moves))
 
     return score
 
@@ -238,16 +238,9 @@ class MinimaxPlayer(IsolationPlayer):
         return best_move
 
     def minimax(self, game, depth):
-        """Implement depth-limited minimax search algorithm as described in
-        the lectures.
-
+        """
         This should be a modified version of MINIMAX-DECISION in the AIMA text.
         https://github.com/aimacode/aima-pseudocode/blob/master/md/Minimax-Decision.md
-
-        **********************************************************************
-            You MAY add additional methods to this class, or define helper
-                 functions to implement the required functionality.
-        **********************************************************************
 
         Parameters
         ----------
@@ -276,7 +269,9 @@ class MinimaxPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        timeout_check()
+        # timeout check
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
 
         best_score = float('-inf')
 
@@ -288,7 +283,7 @@ class MinimaxPlayer(IsolationPlayer):
 
         # all possible actions contrained by depth
         for m in game.get_legal_moves():
-            v = min_value(game.forecast_move(m), depth - 1)
+            v = min_value(self, game.forecast_move(m), depth - 1)
             if v > best_score:
                 best_score = v
                 best_move = m
@@ -296,36 +291,40 @@ class MinimaxPlayer(IsolationPlayer):
         return best_move
 
 
-    def max_value(game, depth):
+def max_value(self, game, depth):
 
-        timeout_check()
+    # timeout check
+    if self.time_left() < self.TIMER_THRESHOLD:
+        raise SearchTimeout()
 
-        # recursive calls decrement depth until it reaches 0 or terminal_test
-        if depth <= 0 or terminal_test(game):
-            return self.score(game, self)
+    # recursive calls decrement depth until it reaches 0 or terminal_test
+    if depth <= 0 or terminal_test(game):
+        return self.score(game, self)
 
-        v = float('-inf')
+    v = float('-inf')
 
-        # max in node, update depth
-        for m in game.get_legal_moves():
-            v = max(v, min_value(game.forecast_move(m), depth - 1))
-        return v
+    # max in node, update depth
+    for m in game.get_legal_moves():
+        v = max(v, min_value(self, game.forecast_move(m), depth - 1))
+    return v
 
 
-    def min_value(game, depth):
+def min_value(self, game, depth):
 
-        timeout_check()
+    # timeout check
+    if self.time_left() < self.TIMER_THRESHOLD:
+        raise SearchTimeout()
 
-        # recursive calls decrement depth until it reaches 0 or terminal_test
-        if depth <= 0 or terminal_test(game):
-            return self.score(game, self)
+    # recursive calls decrement depth until it reaches 0 or terminal_test
+    if depth <= 0 or terminal_test(game):
+        return self.score(game, self)
 
-        v = float('inf')
+    v = float('inf')
 
-        # min in node, update depth
-        for m in game.get_legal_moves():
-            v = min(v, max_value(game.forecast_move(m), depth - 1))
-        return v
+    # min in node, update depth
+    for m in game.get_legal_moves():
+        v = min(v, max_value(self, game.forecast_move(m), depth - 1))
+    return v
 
 
 class AlphaBetaPlayer(IsolationPlayer):
@@ -373,7 +372,7 @@ class AlphaBetaPlayer(IsolationPlayer):
         try:
             # The try/except block will automatically catch the exception
             # raised when the timer is about to expire.
-            return self.alphabeta(game, alpha, beta, self.search_depth)
+            return self.alphabeta(game, self.search_depth)
 
         except SearchTimeout:
             print("Search has timedout, returning best move: " + str(best_move))
@@ -383,16 +382,10 @@ class AlphaBetaPlayer(IsolationPlayer):
 
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf")):
-        """Implement depth-limited minimax search with alpha-beta pruning as
-        described in the lectures.
-
+        """
         This should be a modified version of ALPHA-BETA-SEARCH in the AIMA text
         https://github.com/aimacode/aima-pseudocode/blob/master/md/Alpha-Beta-Search.md
 
-        **********************************************************************
-            You MAY add additional methods to this class, or define helper
-                 functions to implement the required functionality.
-        **********************************************************************
 
         Parameters
         ----------
@@ -427,7 +420,9 @@ class AlphaBetaPlayer(IsolationPlayer):
                 each helper function or else your agent will timeout during
                 testing.
         """
-        timeout_check()
+        # timeout check
+        if self.time_left() < self.TIMER_THRESHOLD:
+            raise SearchTimeout()
 
         best_score = float('-inf')
 
@@ -439,7 +434,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         # all possible actions constrained by depth/alpha/beta
         for m in game.get_legal_moves():
-            v = max_value(game.forecast_move(m), alpha, beta, depth - 1)
+            v = max_value_ab(self, game.forecast_move(m), alpha, beta, depth - 1)
             if v > best_score:
                 best_score = v
                 best_move = m
@@ -447,41 +442,45 @@ class AlphaBetaPlayer(IsolationPlayer):
         return best_move
 
 
-    def max_value(game, alpha, beta, depth):
+def max_value_ab(self, game, alpha, beta, depth):
 
-        timeout_check()
+    # timeout check
+    if self.time_left() < self.TIMER_THRESHOLD:
+        raise SearchTimeout()
 
-        # recursive calls decrement depth until it reaches 0 or terminal_test
-        if depth <= 0 or terminal_test(game):
-            return self.score(game, self)
+    # recursive calls decrement depth until it reaches 0 or terminal_test
+    if depth <= 0 or terminal_test(game):
+        return self.score(game, self)
 
-        v = float('-inf')
+    v = float('-inf')
 
-        # max in node, update depth/alpha
-        for m in game.get_legal_moves(game):
-            v = max(v, min_value(game.forecast_move(m), alpha, beta, depth - 1))
-            # check upper bound
-            if v >= beta:
-                return v
-            alpha = max(alpha, v)
-        return v
+    # max in node, update depth/alpha
+    for m in game.get_legal_moves():
+        v = max(v, min_value_ab(self, game.forecast_move(m), alpha, beta, depth - 1))
+        # check upper bound
+        if v >= beta:
+            return v
+        alpha = max(alpha, v)
+    return v
 
 
-    def min_value(game, alpha, beta, depth):
+def min_value_ab(self, game, alpha, beta, depth):
 
-        timeout_check()
+    # timeout check
+    if self.time_left() < self.TIMER_THRESHOLD:
+        raise SearchTimeout()
 
-        # recursive calls decrement depth until it reaches 0 or terminal_test
-        if depth <= 0 or terminal_test(game):
-            return self.score(game, self)
+    # recursive calls decrement depth until it reaches 0 or terminal_test
+    if depth <= 0 or terminal_test(game):
+        return self.score(game, self)
 
-        v = float('inf')
+    v = float('inf')
 
-        # min in node, update depth/beta
-        for m in game.get_legal_moves(game):
-            v = min(v, max_value(game.forecast_move(m), alpha, beta, depth - 1))
-            # check lower bound
-            if v <= alpha:
-                return v
-            b = min(beta, v)
-        return v
+    # min in node, update depth/beta
+    for m in game.get_legal_moves():
+        v = min(v, max_value_ab(self, game.forecast_move(m), alpha, beta, depth - 1))
+        # check lower bound
+        if v <= alpha:
+            return v
+        beta = min(beta, v)
+    return v
