@@ -47,6 +47,10 @@ def check_winner(game, player):
         return float("inf")
 
 
+# def heuristic_1(game, player):
+#     pass
+
+
 def custom_score(game, player):
     """
     A weighted heuristic which does not give a high score early on
@@ -131,7 +135,7 @@ def custom_score_2(game, player):
     relative_mobility = my_moves - opp_moves
 
     # linear combination score
-    score = mobility + relative_mobility
+    score = float(mobility + relative_mobility)
 
     return score
 
@@ -377,19 +381,19 @@ class AlphaBetaPlayer(IsolationPlayer):
         # The try/except block will automatically catch the exception
         # raised when the timer is about to expire.
         try:
-            search_depth = 1 # limited iterative deepening, start at 1
+            search_depth = 0 # limited iterative deepening, start at 0
             while True:
                 move = self.alphabeta(game, search_depth)
                 if move == (-1, -1):
                     return best_move
                 else:
                     best_move = move
-                search_depth += 1 # increment until timeout or limit
+                search_depth += 1 # increment until timeout
 
         except SearchTimeout:
-            return best_move
+            return best_move # return current best move on timeout
 
-        # Return the best move from the last completed search iteration
+        # return the best move from the last completed search iteration
         return best_move
 
     def max_value(self, game, alpha, beta, depth):
@@ -485,7 +489,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         # all possible actions constrained by depth/alpha/beta
         for m in game.get_legal_moves():
-            v = self.max_value(game.forecast_move(m), alpha, beta, depth - 1)
+            v = self.min_value(game.forecast_move(m), alpha, beta, depth - 1)
             if v > best_score:
                 best_score = v
                 best_move = m
