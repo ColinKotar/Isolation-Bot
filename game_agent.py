@@ -59,7 +59,7 @@ def heuristic_1(game, player):
         total += 1
 
     # appreciating weight
-    weight = 16/total
+    weight = 1/total
 
     # become more aggressive as the game goes on
     return float(my_moves - (weight * opp_moves))
@@ -84,7 +84,94 @@ def heuristic_3(game, player):
     opp_moves = len(game.get_legal_moves(game.get_opponent(player)))
 
     # consistently decrease opponents moves
-    return float(my_moves - (1.25 * opp_moves))
+    return float(my_moves - (1.5 * opp_moves))
+
+"""
+When I called the heuristics in order, now changed so that the most effective
+heuristic_2 is called in custom_score.
+AB_Custom(custom_score): heuristic_1
+AB_Custom_2(custom_score_2): heuristic_2
+AB_Custom_3(custom_score_3): heuristic_3
+
+Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
+                        Won | Lost   Won | Lost   Won | Lost   Won | Lost
+    1       Random      10  |   0    10  |   0     9  |   1    10  |   0
+    2       MM_Open      6  |   4     7  |   3     8  |   2     6  |   4
+    3      MM_Center     8  |   2    10  |   0    10  |   0    10  |   0
+    4     MM_Improved    6  |   4     7  |   3     7  |   3     8  |   2
+    5       AB_Open      4  |   6     6  |   4     5  |   5     4  |   6
+    6      AB_Center     6  |   4     3  |   7     6  |   4     8  |   2
+    7     AB_Improved    5  |   5     3  |   7     6  |   4     6  |   4
+--------------------------------------------------------------------------
+           Win Rate:      64.3%        65.7%        72.9%        74.3%
+
+Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
+                        Won | Lost   Won | Lost   Won | Lost   Won | Lost
+    1       Random       9  |   1    10  |   0    10  |   0    10  |   0
+    2       MM_Open      9  |   1     6  |   4     9  |   1     5  |   5
+    3      MM_Center     8  |   2     9  |   1     9  |   1     9  |   1
+    4     MM_Improved    5  |   5     6  |   4     9  |   1     8  |   2
+    5       AB_Open      6  |   4     6  |   4     3  |   7     4  |   6
+    6      AB_Center     5  |   5     4  |   6     7  |   3     4  |   6
+    7     AB_Improved    5  |   5     5  |   5     6  |   4     4  |   6
+--------------------------------------------------------------------------
+           Win Rate:      67.1%        65.7%        75.7%        62.9%
+
+Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
+                        Won | Lost   Won | Lost   Won | Lost   Won | Lost
+    1       Random      10  |   0     9  |   1    10  |   0    10  |   0
+    2       MM_Open      7  |   3     6  |   4     7  |   3     7  |   3
+    3      MM_Center     8  |   2     7  |   3    10  |   0     9  |   1
+    4     MM_Improved    6  |   4     5  |   5     9  |   1     8  |   2
+    5       AB_Open      4  |   6     3  |   7     5  |   5     6  |   4
+    6      AB_Center     7  |   3     6  |   4     8  |   2     5  |   5
+    7     AB_Improved    7  |   3     6  |   4     6  |   4     4  |   6
+--------------------------------------------------------------------------
+           Win Rate:      70.0%        60.0%        78.6%        70.0%
+
+Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
+                        Won | Lost   Won | Lost   Won | Lost   Won | Lost
+    1       Random      10  |   0     9  |   1    10  |   0    10  |   0
+    2       MM_Open      8  |   2     8  |   2    10  |   0     9  |   1
+    3      MM_Center     7  |   3     9  |   1    10  |   0    10  |   0
+    4     MM_Improved    8  |   2     9  |   1     6  |   4     6  |   4
+    5       AB_Open      4  |   6     4  |   6     7  |   3     4  |   6
+    6      AB_Center     4  |   6     3  |   7     8  |   2     6  |   4
+    7     AB_Improved    6  |   4     5  |   5     4  |   6     5  |   5
+--------------------------------------------------------------------------
+           Win Rate:      67.1%        67.1%        78.6%        71.4%
+
+
+
+Linear combinations of heuristics:
+AB_Custom: custom_score: heuristic_1(game, player) + heuristic_3(game, player)
+AB_Custom_2: custom_score_2: 0.5*heuristic_2(game, player) + 0.15*heuristic_1(game, player) + 0.35*heuristic_3(game, player)
+AB_Custom_3: custom_score_3: heuristic_1(game, player) + heuristic_2(game, player) + heuristic_3(game, player)
+
+Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
+                        Won | Lost   Won | Lost   Won | Lost   Won | Lost
+    1       Random       9  |   1     9  |   1    10  |   0    10  |   0
+    2       MM_Open      9  |   1     8  |   2     8  |   2     8  |   2
+    3      MM_Center    10  |   0    10  |   0     8  |   2     8  |   2
+    4     MM_Improved    6  |   4     9  |   1     7  |   3     7  |   3
+    5       AB_Open      5  |   5     5  |   5     5  |   5     6  |   4
+    6      AB_Center     6  |   4     6  |   4     6  |   4     6  |   4
+    7     AB_Improved    6  |   4     4  |   6     6  |   4     6  |   4
+--------------------------------------------------------------------------
+           Win Rate:      72.9%        72.9%        71.4%        72.9%
+
+Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
+                        Won | Lost   Won | Lost   Won | Lost   Won | Lost
+    1       Random       9  |   1    10  |   0    10  |   0    10  |   0
+    2       MM_Open      7  |   3     7  |   3     7  |   3     8  |   2
+    3      MM_Center     8  |   2     9  |   1    10  |   0     9  |   1
+    4     MM_Improved    7  |   3     9  |   1     8  |   2    10  |   0
+    5       AB_Open      6  |   4     4  |   6     5  |   5     4  |   6
+    6      AB_Center     6  |   4     6  |   4     5  |   5     5  |   5
+    7     AB_Improved    4  |   6     6  |   4     3  |   7     3  |   7
+--------------------------------------------------------------------------
+           Win Rate:      67.1%        72.9%        68.6%        70.0%
+"""
 
 
 def custom_score(game, player):
@@ -237,7 +324,7 @@ class MinimaxPlayer(IsolationPlayer):
             return self.minimax(game, self.search_depth)
 
         except SearchTimeout:
-            print("Search has timedout, returning best move: " + str(best_move))
+            pass
 
         # Return the best move from the last completed search iteration
         return best_move
@@ -271,7 +358,7 @@ class MinimaxPlayer(IsolationPlayer):
 
         # min in node, update depth
         for move in game.get_legal_moves():
-            value = min(v, self.max_value(game.forecast_move(move), depth - 1))
+            value = min(value, self.max_value(game.forecast_move(move), depth - 1))
         return value
 
 
@@ -322,7 +409,7 @@ class MinimaxPlayer(IsolationPlayer):
         for move in legal_moves:
             score = self.min_value(game.forecast_move(move), depth - 1)
             if score > best_score:
-                best_score = v
+                best_score = score
                 best_move = move
 
         return best_move
@@ -381,7 +468,6 @@ class AlphaBetaPlayer(IsolationPlayer):
                 search_depth += 1 # increment until timeout
 
         except SearchTimeout:
-            print("Search has timedout, returning best move: " + str(best_move))
             return best_move # return current best move on timeout
 
         # return the best move from the last completed search iteration
@@ -399,8 +485,8 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         # max in node, update depth/alpha
         for move in game.get_legal_moves():
-            value = max(v, self.min_value(game.forecast_move(move), alpha, beta, depth - 1))
-            if v >= beta: # check upper bound
+            value = max(value, self.min_value(game.forecast_move(move), alpha, beta, depth - 1))
+            if value >= beta: # check upper bound
                 return value
             alpha = max(alpha, value) # update alpha
         return value
@@ -418,7 +504,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         # min in node, update depth/beta
         for move in game.get_legal_moves():
-            value = min(v, self.max_value(game.forecast_move(move), alpha, beta, depth - 1))
+            value = min(value, self.max_value(game.forecast_move(move), alpha, beta, depth - 1))
             if value <= alpha: # check lower bound
                 return value
             beta = min(beta, value) # update beta
