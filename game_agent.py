@@ -1,8 +1,7 @@
-"""Finish all TODO items in this file to complete the isolation project, then
-test your agent's strength against a set of known agents using tournament.py
-and include the results in your report.
-"""
+
+
 import random as r
+
 
 class SearchTimeout(Exception):
     """Subclass base exception for code clarity. """
@@ -12,24 +11,16 @@ class SearchTimeout(Exception):
 def terminal_test(game):
     """
     Checks to see if the current player is out of moves.
-
-    Parameters
-    ----------
-    game : `isolation.Board`
-        An instance of `isolation.Board` encoding the current state of the
-        game (e.g., player locations and blocked cells).
-    Returns
-    -------
-    boolean
-        True if the current player is out of moves.
-        False if the player has legal moves to chose from.
+    True if the current player is out of moves.
+    False if the player has legal moves to chose from.
     """
     return not bool(game.get_legal_moves())
 
 
 def timeout_check(self):
     """
-    Checks to see if the TIMER_THRESHOLD has been reached.
+    Checks to see if the TIMER_THRESHOLD has been reached. If it has, the
+    SearchTimeout exception is raised.
     """
     if self.time_left() < self.TIMER_THRESHOLD:
         raise SearchTimeout()
@@ -87,8 +78,8 @@ def heuristic_3(game, player):
     return float(my_moves - (1.5 * opp_moves))
 
 """
-When I called the heuristics in order, now changed so that the most effective
-heuristic_2 is called in custom_score.
+I tested the heuristics in the following order - currently updated so the
+best heuristic, heuristic_2, is called in custom_score:
 AB_Custom(custom_score): heuristic_1
 AB_Custom_2(custom_score_2): heuristic_2
 AB_Custom_3(custom_score_3): heuristic_3
@@ -142,10 +133,9 @@ Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
            Win Rate:      67.1%        67.1%        78.6%        71.4%
 
 
-
-Linear combinations of heuristics:
+Linear combinations of heuristics tested:
 AB_Custom: custom_score: heuristic_1(game, player) + heuristic_3(game, player)
-AB_Custom_2: custom_score_2: 0.5*heuristic_2(game, player) + 0.15*heuristic_1(game, player) + 0.35*heuristic_3(game, player)
+AB_Custom_2: custom_score_2: 0.15*heuristic_1(game, player) + 0.5*heuristic_2(game, player) + 0.35*heuristic_3(game, player)
 AB_Custom_3: custom_score_3: heuristic_1(game, player) + heuristic_2(game, player) + heuristic_3(game, player)
 
 Match #   Opponent    AB_Improved   AB_Custom   AB_Custom_2  AB_Custom_3
@@ -472,6 +462,7 @@ class AlphaBetaPlayer(IsolationPlayer):
 
         # return the best move from the last completed search iteration
         return best_move
+
 
     def max_value(self, game, alpha, beta, depth):
 
